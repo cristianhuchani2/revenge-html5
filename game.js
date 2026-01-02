@@ -38,7 +38,7 @@ function checkLoad(){
 // ===== Dino =====
 var dino = {
     x: canvas.width/2 - 37,
-    y: canvas.height/2 - (-75),
+    y: canvas.height/2 - (-300),
     w: 74, h:72,
     vx:0, vy:0,
     speed:4,
