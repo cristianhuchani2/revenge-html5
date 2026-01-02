@@ -58,11 +58,12 @@ var dino = {
     draw:function(){
         ctx.save();
         ctx.translate(this.x + this.w/2, this.y + this.h/2);
-        ctx.scale(this.dir===1?1:-1,1); // espejo horizontal según dirección
+        // dino.png apunta a la izquierda, reflejar si dir=1 (derecha)
+        ctx.scale(this.dir === 1 ? -1 : 1, 1);
         if(dinoImg.complete){
             ctx.drawImage(dinoImg,-this.w/2,-this.h/2,this.w,this.h);
         } else {
-            ctx.fillStyle="#777"; // temporal mientras carga
+            ctx.fillStyle="#777";
             ctx.fillRect(-this.w/2,-this.h/2,this.w,this.h);
         }
         ctx.restore();
@@ -203,8 +204,8 @@ function loop(){
         dino.update();
         dino.draw();
 
-        // Generación de pájaros al inicio uno por uno
-        if(frames>300 && frames<=300 + 60*4){ // primeros 4 enemigos
+        // Aparición gradual de pájaros al inicio
+        if(frames > 300 && frames <= 300 + 60*4){ // primeros 4 enemigos
             if(frames % 60 === 0){
                 if(frames === 360) spawnBird("left");
                 else if(frames === 420) spawnBird("right");
@@ -217,11 +218,9 @@ function loop(){
         for(var i=0;i<enemies.length;i++){
             var e=enemies[i];
             ctx.save();
-            ctx.translate(e.x+e.w/2,e.y+e.h/2);
-            if(e.type==="bird"){
-                ctx.scale(e.dir,1); // espejo horizontal según dirección
-                if(birdImg.complete) ctx.drawImage(birdImg,-e.w/2,-e.h/2,e.w,e.h);
-            }
+            ctx.translate(e.x + e.w/2, e.y + e.h/2);
+            ctx.scale(e.dir === 1 ? -1 : 1, 1); // bird.png apunta a la izquierda
+            if(birdImg.complete) ctx.drawImage(birdImg, -e.w/2, -e.h/2, e.w, e.h);
             ctx.restore();
             e.x += e.vx;
         }
