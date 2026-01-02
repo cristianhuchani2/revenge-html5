@@ -1,33 +1,39 @@
-body {
+* {
     margin: 0;
-    background: #000;
-    overflow: hidden;
+    padding: 0;
+    user-select: none;
     touch-action: none;
 }
 
-canvas {
-    display: block;
-    margin: auto;
+body {
     background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+canvas {
+    background: #1e1e1e;
+    border: 3px solid #fff;
+    image-rendering: pixelated;
 }
 
 #controls {
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    right: 0;
-    height: 90px;
-    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    width: 420px;
+    margin-top: 8px;
 }
 
-.btn {
-    position: absolute;
-    width: 64px;
-    height: 64px;
-    background: transparent;
-    pointer-events: auto;
+button {
+    width: 80px;
+    height: 50px;
+    font-size: 24px;
+    background: #333;
+    color: #fff;
+    border: 3px solid #fff;
 }
 
-#left { left: 20px; bottom: 10px; }
-#right { left: 100px; bottom: 10px; }
-#jump { right: 20px; bottom: 10px; }
+button:active {
+    background: #666;
+}
