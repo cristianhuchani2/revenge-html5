@@ -35,7 +35,6 @@ function checkLoad() {
     imagesLoaded++;
     if(imagesLoaded >= totalImages){
         state = MENU; // pasa al menú
-        // Posicionar dino y cactus al "suelo" (altura del texto "CLICK PARA JUGAR")
         dino.reset();
         cactus.x = canvas.width/2 - cactus.w/2;
         cactus.y = canvas.height/2 + 40;
@@ -135,7 +134,7 @@ function spawnBird(side){
         w:75,
         h:75,
         vx: side==="left"?2 + difficulty*0.5 : -2 - difficulty*0.5,
-        dir: side==="left"?1:-1
+        dir: side==="left"?1:-1 // dirección para espejo horizontal
     });
 }
 
@@ -181,7 +180,6 @@ function loop(){
     }
 
     if(state===MENU){
-        // Dibujar cactus y dino al "suelo"
         cactus.draw();
         dino.draw();
         drawText("DINO PIXEL REVENGE H",150,24);
@@ -193,20 +191,26 @@ function loop(){
 
         // Actualizar dino según botones
         dino.vx=0;
-        if(moveLeft) dino.vx=-dino.speed;
-        if(moveRight) dino.vx=dino.speed;
+        if(moveLeft){
+            dino.vx=-dino.speed;
+            dino.dir=-1;
+        }
+        if(moveRight){
+            dino.vx=dino.speed;
+            dino.dir=1;
+        }
 
         dino.update();
         dino.draw();
 
-        // Generar pájaros después de 5s
-        if(frames===300){
-            spawnBird("left");
-            spawnBird("right");
-        }
-        if(frames>300 && frames%300===0){
-            spawnBird("left");
-            spawnBird("right");
+        // Generación de pájaros al inicio uno por uno
+        if(frames>300 && frames<=300 + 60*4){ // primeros 4 enemigos
+            if(frames % 60 === 0){
+                if(frames === 360) spawnBird("left");
+                else if(frames === 420) spawnBird("right");
+                else if(frames === 480) spawnBird("left");
+                else if(frames === 540) spawnBird("right");
+            }
         }
 
         // Dibujar enemigos voladores
@@ -215,7 +219,7 @@ function loop(){
             ctx.save();
             ctx.translate(e.x+e.w/2,e.y+e.h/2);
             if(e.type==="bird"){
-                ctx.scale(e.dir===1?1:-1,1); // espejo horizontal
+                ctx.scale(e.dir,1); // espejo horizontal según dirección
                 if(birdImg.complete) ctx.drawImage(birdImg,-e.w/2,-e.h/2,e.w,e.h);
             }
             ctx.restore();
