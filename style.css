@@ -1,12 +1,35 @@
 body {
     margin: 0;
-    background: #000;
+    background: #111;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
+
 canvas {
     image-rendering: pixelated;
-    border: 2px solid #222;
+    border: 3px solid #333;
+}
+
+#controls {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+}
+
+.btn {
+    width: 60px;
+    height: 60px;
+    background: #222;
+    border: 3px solid #555;
+    pointer-events: auto;
+}
+
+.jump {
+    margin: 0 auto;
 }
