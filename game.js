@@ -36,7 +36,7 @@ function checkLoad(){
 // ===== Dino =====
 var dino = {
     x: canvas.width/2 - 37,
-    y: canvas.height/2 - 10, // más abajo
+    y: canvas.height/2 + 10, // más abajo
     w: 74, h:72,
     vx:0, vy:0,
     speed:4,
@@ -59,8 +59,8 @@ var dino = {
         this.y += this.vy;
         this.x += this.vx;
 
-        if(this.y >= canvas.height/2 - 10){ 
-            this.y = canvas.height/2 - 10; 
+        if(this.y >= canvas.height/2 + 10){ 
+            this.y = canvas.height/2 + 10; 
             this.vy = 0; 
             this.grounded = true; 
         }
@@ -75,7 +75,7 @@ var dino = {
 
     reset:function(){
         this.x = canvas.width/2 - this.w/2;
-        this.y = canvas.height/2 - 10;
+        this.y = canvas.height/2 + 10;
         this.vx=0; this.vy=0; this.grounded=true;
         this.dir = 1;
     }
@@ -87,7 +87,7 @@ function createCactus(){
     return {
         type:"cactus",
         x: side==="left" ? -52 : canvas.width,
-        y: canvas.height/2 - 10,
+        y: canvas.height/2 + 10,
         w:52, h:100,
         vx: side==="left" ? 2 + difficulty*0.5 : -2 - difficulty*0.5,
         dir: side==="left" ? 1 : -1
@@ -99,7 +99,7 @@ function createBird(side){
     return {
         type:"bird",
         x: side==="left"?0:canvas.width-75*scale,
-        y: canvas.height/2 - 50,
+        y: canvas.height/2 - 20,
         w:75*scale, h:75*scale,
         vx: side==="left"?2 + difficulty*0.5 : -2 - difficulty*0.5,
         dir: side==="left"?1:-1
@@ -196,14 +196,10 @@ function loop(){
                 ctx.scale(e.dir===1?-1:1,1);
                 if(birdImg.complete) ctx.drawImage(birdImg,-e.w/2,-e.h/2,e.w,e.h);
                 ctx.restore();
-                e.x+=e.vx;
-            } else {
-                ctx.save();
-                ctx.translate(e.x+e.w/2,e.y+e.h/2);
-                ctx.scale(e.dir===1?-1:1,1); // opcional, puede dejar fijo
+                e.x += e.vx;
+            } else if(e.type==="cactus"){
                 if(cactusImg.complete) ctx.drawImage(cactusImg,e.x,e.y,e.w,e.h);
-                ctx.restore();
-                e.x+=e.vx;
+                e.x += e.vx; // mover cactus
             }
         }
 
