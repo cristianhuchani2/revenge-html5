@@ -38,7 +38,7 @@ function checkLoad(){
 // ===== Dino =====
 var dino = {
     x: canvas.width/2 - 37,
-    y: canvas.height/2,
+    y: canvas.height/2 - (-33),
     w: 74, h:72,
     vx:0, vy:0,
     speed:4,
@@ -84,7 +84,7 @@ var dino = {
 };
 
 // ===== Cactus =====
-var cactus = {x:canvas.width/2-26, y:canvas.height/2, w:52, h:100,
+var cactus = {x:canvas.width/2-26, y:canvas.height/2 - (-33), w:52, h:100,
     draw:function(){ if(cactusImg.complete) ctx.drawImage(cactusImg,this.x,this.y,this.w,this.h); 
     else {ctx.fillStyle="#fff"; ctx.fillRect(this.x,this.y,this.w,this.h);} }
 };
