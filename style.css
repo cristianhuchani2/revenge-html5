@@ -12,7 +12,7 @@ canvas {
     position: relative;
 }
 
-/* Botones flotando sobre el canvas */
+/* Botones flotantes */
 #left, #right, #jump, #shoot {
     position: absolute;
     width: 50px;
@@ -26,7 +26,6 @@ canvas {
     user-select: none;
 }
 
-/* Ubicación flotante original */
 #left { left: 20px; bottom: 20px; }
 #right { left: 80px; bottom: 20px; }
 #jump { right: 80px; bottom: 20px; }
