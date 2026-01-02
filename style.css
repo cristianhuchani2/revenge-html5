@@ -1,39 +1,13 @@
-* {
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    touch-action: none;
-}
-
 body {
-    background: #111;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin: 0;
+    background: #000; /* cielo nocturno */
+    overflow: hidden;
+    font-family: monospace;
 }
 
 canvas {
-    background: #1e1e1e;
-    border: 3px solid #fff;
-    image-rendering: pixelated;
-}
-
-#controls {
-    display: flex;
-    justify-content: space-between;
-    width: 420px;
-    margin-top: 8px;
-}
-
-button {
-    width: 80px;
-    height: 50px;
-    font-size: 24px;
-    background: #333;
-    color: #fff;
-    border: 3px solid #fff;
-}
-
-button:active {
-    background: #666;
+    display: block;
+    margin: 0 auto;
+    background: #000;
+    position: relative;
 }
