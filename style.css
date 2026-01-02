@@ -1,35 +1,33 @@
 body {
     margin: 0;
-    background: #111;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background: #000;
+    overflow: hidden;
+    touch-action: none;
 }
 
 canvas {
-    image-rendering: pixelated;
-    border: 3px solid #333;
+    display: block;
+    margin: auto;
+    background: #111;
 }
 
 #controls {
     position: absolute;
     bottom: 10px;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
+    left: 0;
+    right: 0;
+    height: 90px;
     pointer-events: none;
 }
 
 .btn {
-    width: 60px;
-    height: 60px;
-    background: #222;
-    border: 3px solid #555;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background: transparent;
     pointer-events: auto;
 }
 
-.jump {
-    margin: 0 auto;
-}
+#left { left: 20px; bottom: 10px; }
+#right { left: 100px; bottom: 10px; }
+#jump { right: 20px; bottom: 10px; }
