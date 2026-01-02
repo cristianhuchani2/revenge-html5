@@ -34,10 +34,12 @@ function checkLoad(){
 }
 
 // ===== Dino =====
+var dinoGroundY = canvas.height/2 + 140; // dino más abajo
+
 var dino = {
     w: 74, h:72,
     x: canvas.width/2 - 37,
-    y: canvas.height/2 + 20, // bajado 10px más
+    y: dinoGroundY,
     vx:0, vy:0,
     speed:4,
     g:0.7,
@@ -59,8 +61,8 @@ var dino = {
         this.y += this.vy;
         this.x += this.vx;
 
-        if(this.y >= canvas.height/2 + 20){ 
-            this.y = canvas.height/2 + 20; 
+        if(this.y >= dinoGroundY){ 
+            this.y = dinoGroundY; 
             this.vy = 0; 
             this.grounded = true; 
         }
@@ -75,7 +77,7 @@ var dino = {
 
     reset:function(){
         this.x = canvas.width/2 - this.w/2;
-        this.y = canvas.height/2 + 20; // alineado con cactus, bajado 10px
+        this.y = dinoGroundY; // baja dino
         this.vx=0; this.vy=0; this.grounded=true;
         this.dir = 1;
     }
@@ -87,7 +89,7 @@ function createCactus(){
     return {
         type:"cactus",
         x: side==="left" ? -52 : canvas.width,
-        y: canvas.height/2 + 20, // mismo nivel que dino
+        y: canvas.height/2 + 20, // cactus se queda en altura original
         w:52, h:100,
         vx: side==="left" ? 2 + difficulty*0.5 : -2 - difficulty*0.5,
         dir: side==="left" ? 1 : -1
@@ -99,7 +101,7 @@ function createBird(side){
     return {
         type:"bird",
         x: side==="left"?0:canvas.width-75*scale,
-        y: canvas.height/2 - 20, // ajustado 10px más abajo
+        y: dinoGroundY - 30, // pájaro 30 px arriba del dino
         w:75*scale, h:75*scale,
         vx: side==="left"?2 + difficulty*0.5 : -2 - difficulty*0.5,
         dir: side==="left"?1:-1
