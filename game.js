@@ -1,220 +1,135 @@
 var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
 
-var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function(fn){ setTimeout(fn,1000/30); };
-
-// ===== Sprites =====
+// Sprites
 var dinoImg = new Image(); dinoImg.src = "dino.png";
 var birdImg = new Image(); birdImg.src = "bird.png";
 var cactusImg = new Image(); cactusImg.src = "cactus.png";
 var bgImg = new Image(); bgImg.src = "background.png";
 
-// ===== Estado =====
-var LOADING=0, MENU=1, GAME=2, OVER=3;
-var state = LOADING;
+// Estados
+var MENU=0, GAME=1, OVER=2;
+var state = MENU;
 
-var frames = 0;
-var score = 0;
-var difficulty = 1;
-
-var imagesLoaded = 0;
-var totalImages = 4;
-
-dinoImg.onload = checkLoad;
-birdImg.onload = checkLoad;
-cactusImg.onload = checkLoad;
-bgImg.onload = checkLoad;
-
-function checkLoad(){
-    imagesLoaded++;
-    if(imagesLoaded>=totalImages){
-        state = MENU;
-        dino.reset();
-        cactus.x = canvas.width/2 - cactus.w/2;
-        cactus.y = canvas.height/2;
-    }
-}
-
-// ===== Dino =====
+// ===== DINO =====
 var dino = {
     x: canvas.width/2 - 37,
-    y: canvas.height/2 - 300,
-    w: 74, h:72,
-    vx:0, vy:0,
-    speed:4,
-    g:0.7,
-    jump:-12,
-    grounded:true,
-    dir:1,
+    y: canvas.height/2 - 30, // 🔼 30 px más arriba
+    w: 74,
+    h: 72,
+    vx: 0,
+    vy: 0,
+    speed: 4,
+    gravity: 0.7,
+    jumpForce: -12,
+    grounded: true,
+    dir: 1,
 
-    draw:function(){
-        ctx.save();
-        ctx.translate(this.x+this.w/2, this.y+this.h/2);
-        ctx.scale(this.dir===1?-1:1,1);
-        if(dinoImg.complete) ctx.drawImage(dinoImg,-this.w/2,-this.h/2,this.w,this.h);
-        else {ctx.fillStyle="#fff"; ctx.fillRect(-this.w/2,-this.h/2,this.w,this.h);}
-        ctx.restore();
-    },
-
-    update:function(){
-        this.vy += this.g;
+    update(){
+        this.vy += this.gravity;
         this.y += this.vy;
         this.x += this.vx;
 
-        if(this.y >= canvas.height/2){
-            this.y = canvas.height/2;
+        var groundY = canvas.height/2 - 30;
+        if(this.y >= groundY){
+            this.y = groundY;
             this.vy = 0;
             this.grounded = true;
         }
 
-        if(this.x<0) this.x=0;
-        if(this.x+this.w>canvas.width) this.x=canvas.width-this.w;
+        if(this.x < 0) this.x = 0;
+        if(this.x + this.w > canvas.width) this.x = canvas.width - this.w;
     },
 
-    jumpUp:function(){
-        if(this.grounded){ this.vy=this.jump; this.grounded=false; }
+    draw(){
+        ctx.save();
+        ctx.translate(this.x + this.w/2, this.y + this.h/2);
+        ctx.scale(this.dir === 1 ? -1 : 1, 1);
+        ctx.drawImage(dinoImg, -this.w/2, -this.h/2, this.w, this.h);
+        ctx.restore();
     },
 
-    reset:function(){
-        this.x = canvas.width/2 - this.w/2;
-        this.y = canvas.height/2;
-        this.vx=0; this.vy=0; this.grounded=true;
-        this.dir = 1;
+    jump(){
+        if(this.grounded){
+            this.vy = this.jumpForce;
+            this.grounded = false;
+        }
     }
 };
 
-// ===== Cactus =====
-var cactus = {x:canvas.width/2-26, y:canvas.height/2 - (-33), w:52, h:100,
-    draw:function(){ if(cactusImg.complete) ctx.drawImage(cactusImg,this.x,this.y,this.w,this.h); 
-    else {ctx.fillStyle="#fff"; ctx.fillRect(this.x,this.y,this.w,this.h);} }
+// ===== CACTUS =====
+var cactus = {
+    x: canvas.width/2 - 26,
+    y: canvas.height/2 - 30, // 🔼 30 px más arriba
+    w: 52,
+    h: 100,
+    draw(){
+        ctx.drawImage(cactusImg, this.x, this.y, this.w, this.h);
+    }
 };
 
-// ===== Balas =====
-var bullets = [];
-function shoot(){
-    bullets.push({x:dino.x+dino.w/2-3, y:dino.y+dino.h/2-2, w:6,h:3,vx:6*dino.dir});
-}
+// ===== ENEMIGOS =====
+var enemies = [];
 
-// ===== Enemigos =====
-var enemies=[];
-var spawnTimer=0, spawnInterval=120, spawnCounter=0;
 function spawnBird(side){
-    enemies.push({type:"bird", x:side==="left"?0:canvas.width-75, y:canvas.height/2-30, w:75,h:75,
-        vx:side==="left"?2+difficulty*0.5:-2-difficulty*0.5, dir:side==="left"?1:-1});
+    enemies.push({
+        type: "bird",
+        w: 52, // 70% de 75
+        h: 52,
+        x: side === "left" ? 0 : canvas.width - 52,
+        y: canvas.height/2 - 30 - 40, // 🔼 ajustado a nueva altura
+        vx: side === "left" ? 2 : -2,
+        dir: side === "left" ? 1 : -1
+    });
 }
 
-// ===== Controles flotantes =====
+// ===== CONTROLES =====
 var moveLeft=false, moveRight=false;
 
-var leftBtn = document.getElementById("left");
-var rightBtn = document.getElementById("right");
-var jumpBtn = document.getElementById("jump");
-var shootBtn = document.getElementById("shoot");
+document.getElementById("left").onmousedown = () => moveLeft=true;
+document.getElementById("right").onmousedown = () => moveRight=true;
+document.getElementById("left").onmouseup = () => moveLeft=false;
+document.getElementById("right").onmouseup = () => moveRight=false;
+document.getElementById("jump").onclick = () => dino.jump();
 
-leftBtn.onmousedown=leftBtn.ontouchstart=function(){moveLeft=true; dino.dir=-1;};
-leftBtn.onmouseup=leftBtn.ontouchend=function(){moveLeft=false;};
-rightBtn.onmousedown=rightBtn.ontouchstart=function(){moveRight=true; dino.dir=1;};
-rightBtn.onmouseup=rightBtn.ontouchend=function(){moveRight=false;};
-jumpBtn.onclick=jumpBtn.ontouchstart=function(){if(state===GAME)dino.jumpUp();};
-shootBtn.onclick=shootBtn.ontouchstart=function(){if(state===GAME)shoot();};
-
-canvas.onclick=function(){
-    if(state===MENU) state=GAME;
-    else if(state===OVER) resetGame();
-};
-
-// ===== Reset =====
-function resetGame(){
-    enemies=[]; bullets=[]; score=0; difficulty=1; frames=0;
-    spawnTimer=0; spawnCounter=0;
-    dino.reset();
-}
-
-// ===== Colisiones =====
-function rectHit(a,b){ return (a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y); }
-
-// ===== Loop =====
+// ===== LOOP =====
 function loop(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // Fondo
-    if(bgImg.complete) ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
+    ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
 
-    if(state===LOADING){ drawText("Cargando sprites...",180,24); }
-
-    if(state===MENU){
-        cactus.draw(); dino.draw();
-        drawText("DINO PIXEL REVENGE H",150,24);
-        drawText("CLICK PARA JUGAR",200,14);
+    if(state === MENU){
+        dino.draw();
+        cactus.draw();
+        ctx.fillStyle="#fff";
+        ctx.textAlign="center";
+        ctx.fillText("CLICK PARA JUGAR", canvas.width/2, 160);
     }
 
-    if(state===GAME){
-        frames++;
+    if(state === GAME){
         dino.vx = 0;
-        if(moveLeft){ dino.vx = -dino.speed; dino.dir=-1; }
-        if(moveRight){ dino.vx = dino.speed; dino.dir=1; }
-        dino.update(); dino.draw();
+        if(moveLeft){ dino.vx = -dino.speed; dino.dir = -1; }
+        if(moveRight){ dino.vx = dino.speed; dino.dir = 1; }
+
+        dino.update();
+        dino.draw();
         cactus.draw();
 
-        // Aparición progresiva
-        spawnTimer++;
-        if(spawnTimer >= spawnInterval){
-            spawnTimer=0; spawnCounter++;
-            if(spawnCounter<=3){
-                enemies.push({type:"cactus", x:Math.random()*(canvas.width-52), y:canvas.height/2, w:52, h:100});
-            } else {
-                if(Math.random()<0.5){
-                    enemies.push({type:"cactus", x:Math.random()*(canvas.width-52), y:canvas.height/2, w:52, h:100});
-                } else {
-                    spawnBird(Math.random()<0.5?"left":"right");
-                }
-            }
-            if(spawnInterval>30 && frames%300===0) spawnInterval-=5;
-        }
-
-        // Dibujar enemigos
-        for(var i=0;i<enemies.length;i++){
-            var e=enemies[i];
-            if(e.type==="bird"){
-                ctx.save();
-                ctx.translate(e.x+e.w/2,e.y+e.h/2);
-                ctx.scale(e.dir===1?-1:1,1);
-                if(birdImg.complete) ctx.drawImage(birdImg,-e.w/2,-e.h/2,e.w,e.h);
-                ctx.restore();
-                e.x+=e.vx;
-            } else {
-                if(cactusImg.complete) ctx.drawImage(cactusImg,e.x,e.y,e.w,e.h);
-            }
-        }
-
-        // Balas
-        for(var i=0;i<bullets.length;i++){
-            bullets[i].x += bullets[i].vx;
-            ctx.fillStyle="#ffff00";
-            ctx.fillRect(bullets[i].x,bullets[i].y,bullets[i].w,bullets[i].h);
-        }
-
-        // Colisiones
-        for(var i=enemies.length-1;i>=0;i--){
-            var e=enemies[i];
-            if(rectHit(dino,e)) state=OVER;
-            for(var j=bullets.length-1;j>=0;j--){
-                if(rectHit(bullets[j],e)){ bullets.splice(j,1); enemies.splice(i,1); score++; break; }
-            }
-        }
-
-        drawText("Score: "+score,50,14);
+        enemies.forEach(e=>{
+            e.x += e.vx;
+            ctx.save();
+            ctx.translate(e.x + e.w/2, e.y + e.h/2);
+            ctx.scale(e.dir === 1 ? -1 : 1, 1);
+            ctx.drawImage(birdImg, -e.w/2, -e.h/2, e.w, e.h);
+            ctx.restore();
+        });
     }
 
-    if(state===OVER){
-        drawText("GAME OVER",180,26);
-        drawText("Score: "+score,220,16);
-        drawText("CLICK PARA REINICIAR",250,14);
-    }
-
-    raf(loop);
+    requestAnimationFrame(loop);
 }
 
-function drawText(t,y,s){ ctx.fillStyle="#fff"; ctx.font=s+"px monospace"; ctx.textAlign="center"; ctx.fillText(t,canvas.width/2,y); }
+canvas.onclick = ()=>{
+    if(state === MENU) state = GAME;
+};
 
 loop();
