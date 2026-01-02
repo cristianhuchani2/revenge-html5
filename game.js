@@ -36,7 +36,7 @@ function checkLoad(){
 // ===== Dino =====
 var dino = {
     x: canvas.width/2 - 37,
-    y: canvas.height/2 - 30, // Ajuste -30 según Scratch
+    y: canvas.height/2 - 10, // más abajo
     w: 74, h:72,
     vx:0, vy:0,
     speed:4,
@@ -59,8 +59,8 @@ var dino = {
         this.y += this.vy;
         this.x += this.vx;
 
-        if(this.y >= canvas.height/2 - 30){ 
-            this.y = canvas.height/2 - 30; 
+        if(this.y >= canvas.height/2 - 10){ 
+            this.y = canvas.height/2 - 10; 
             this.vy = 0; 
             this.grounded = true; 
         }
@@ -75,24 +75,31 @@ var dino = {
 
     reset:function(){
         this.x = canvas.width/2 - this.w/2;
-        this.y = canvas.height/2 - 30;
+        this.y = canvas.height/2 - 10;
         this.vx=0; this.vy=0; this.grounded=true;
         this.dir = 1;
     }
 };
 
-// ===== Cactus =====
+// ===== Crear enemigos =====
 function createCactus(){
-    return {x: Math.random()*(canvas.width-52), y:canvas.height/2 - 30, w:52, h:100};
+    var side = Math.random()<0.5 ? "left" : "right";
+    return {
+        type:"cactus",
+        x: side==="left" ? -52 : canvas.width,
+        y: canvas.height/2 - 10,
+        w:52, h:100,
+        vx: side==="left" ? 2 + difficulty*0.5 : -2 - difficulty*0.5,
+        dir: side==="left" ? 1 : -1
+    };
 }
 
-// ===== Pájaros =====
 function createBird(side){
     var scale = 0.7;
     return {
         type:"bird",
         x: side==="left"?0:canvas.width-75*scale,
-        y: canvas.height/2 - 30 - 50, // más arriba que dino
+        y: canvas.height/2 - 50,
         w:75*scale, h:75*scale,
         vx: side==="left"?2 + difficulty*0.5 : -2 - difficulty*0.5,
         dir: side==="left"?1:-1
@@ -191,7 +198,12 @@ function loop(){
                 ctx.restore();
                 e.x+=e.vx;
             } else {
+                ctx.save();
+                ctx.translate(e.x+e.w/2,e.y+e.h/2);
+                ctx.scale(e.dir===1?-1:1,1); // opcional, puede dejar fijo
                 if(cactusImg.complete) ctx.drawImage(cactusImg,e.x,e.y,e.w,e.h);
+                ctx.restore();
+                e.x+=e.vx;
             }
         }
 
