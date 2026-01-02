@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    background: #000; /* cielo nocturno */
+    background: #000;
     overflow: hidden;
     font-family: monospace;
 }
@@ -11,3 +11,23 @@ canvas {
     background: #000;
     position: relative;
 }
+
+/* Botones flotando sobre el canvas */
+#left, #right, #jump, #shoot {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #444;
+    color: #fff;
+    text-align: center;
+    line-height: 50px;
+    font-weight: bold;
+    border-radius: 4px;
+    user-select: none;
+}
+
+/* Ubicación flotante original */
+#left { left: 20px; bottom: 20px; }
+#right { left: 80px; bottom: 20px; }
+#jump { right: 80px; bottom: 20px; }
+#shoot { right: 20px; bottom: 20px; }
