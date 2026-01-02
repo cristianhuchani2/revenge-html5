@@ -35,10 +35,10 @@ function checkLoad() {
     imagesLoaded++;
     if(imagesLoaded >= totalImages){
         state = MENU; // pasa al menú
-        // Posicionar dino y cactus al suelo (altura del texto "CLICK PARA JUGAR")
+        // Posicionar dino y cactus al "suelo" (altura del texto "CLICK PARA JUGAR")
         dino.reset();
         cactus.x = canvas.width/2 - cactus.w/2;
-        cactus.y = canvas.height/2 + 40; // suelo
+        cactus.y = canvas.height/2 + 40;
     }
 }
 
@@ -58,10 +58,14 @@ var dino = {
 
     draw:function(){
         ctx.save();
-        ctx.translate(this.x+this.w/2,this.y+this.h/2);
-        ctx.rotate(this.dir===1?0:Math.PI);
-        if(dinoImg.complete) ctx.drawImage(dinoImg,-this.w/2,-this.h/2,this.w,this.h);
-        else ctx.fillStyle="#7CFC00"; ctx.fillRect(-this.w/2,-this.h/2,this.w,this.h);
+        ctx.translate(this.x + this.w/2, this.y + this.h/2);
+        ctx.scale(this.dir===1?1:-1,1); // espejo horizontal según dirección
+        if(dinoImg.complete){
+            ctx.drawImage(dinoImg,-this.w/2,-this.h/2,this.w,this.h);
+        } else {
+            ctx.fillStyle="#777"; // temporal mientras carga
+            ctx.fillRect(-this.w/2,-this.h/2,this.w,this.h);
+        }
         ctx.restore();
     },
 
@@ -109,7 +113,7 @@ var cactus = {
     }
 };
 
-// ===== Bullets =====
+// ===== Balas =====
 var bullets=[];
 function shoot(){
     bullets.push({
@@ -123,7 +127,6 @@ function shoot(){
 
 // ===== Enemigos voladores =====
 var enemies=[];
-
 function spawnBird(side){
     enemies.push({
         type:"bird",
@@ -178,7 +181,7 @@ function loop(){
     }
 
     if(state===MENU){
-        // Dibujar dino y cactus al "suelo"
+        // Dibujar cactus y dino al "suelo"
         cactus.draw();
         dino.draw();
         drawText("DINO PIXEL REVENGE H",150,24);
@@ -211,10 +214,11 @@ function loop(){
             var e=enemies[i];
             ctx.save();
             ctx.translate(e.x+e.w/2,e.y+e.h/2);
-            if(e.type==="bird") ctx.rotate(e.dir===1?0:Math.PI);
-            if(e.type==="bird" && birdImg.complete) ctx.drawImage(birdImg,-e.w/2,-e.h/2,e.w,e.h);
+            if(e.type==="bird"){
+                ctx.scale(e.dir===1?1:-1,1); // espejo horizontal
+                if(birdImg.complete) ctx.drawImage(birdImg,-e.w/2,-e.h/2,e.w,e.h);
+            }
             ctx.restore();
-
             e.x += e.vx;
         }
 
