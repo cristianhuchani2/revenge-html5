@@ -27,13 +27,13 @@ var difficulty = 1;
 
 // ===== Dino =====
 var dino = {
-    x: canvas.width/2 - 37, // 74/2
-    y: canvas.height/2 + 30, // centrado vertical un poco más abajo
+    x: canvas.width/2 - 37,
+    y: canvas.height/2 + 30,
     w: 74,
     h: 72,
     vy: 0,
     vx: 0,
-    speed: 4, // un poco más rápido
+    speed: 4,
     g: 0.7,
     jump:-12,
     grounded:true,
@@ -42,7 +42,7 @@ var dino = {
     draw:function(){
         ctx.save();
         ctx.translate(this.x+this.w/2,this.y+this.h/2);
-        ctx.rotate(this.dir===1?0:Math.PI); // gira 180° si va izquierda
+        ctx.rotate(this.dir===1?0:Math.PI);
         if(dinoImg.complete) ctx.drawImage(dinoImg,-this.w/2,-this.h/2,this.w,this.h);
         else {
             ctx.fillStyle="#7CFC00";
@@ -62,7 +62,6 @@ var dino = {
             this.grounded=true;
         }
 
-        // No salir de pantalla
         if(this.x<0) this.x=0;
         if(this.x+this.w>canvas.width) this.x=canvas.width-this.w;
     },
@@ -103,7 +102,7 @@ function spawnCactus(){
     enemies.push({
         type:"cactus",
         x:canvas.width/2 - 26,
-        y:canvas.height/2 + 30, // mismo nivel que dino
+        y:canvas.height/2 + 30,
         w:52,
         h:100
     });
@@ -113,7 +112,7 @@ function spawnBird(side){
     enemies.push({
         type:"bird",
         x:side==="left"?0:canvas.width-75,
-        y:canvas.height/2 - 30, // más arriba que dino
+        y:canvas.height/2 - 30,
         w:75,
         h:75,
         vx: side==="left"?2 + difficulty*0.5 : -2 - difficulty*0.5,
@@ -173,9 +172,15 @@ function loop(){
         dino.update();
         dino.draw();
 
-        // Enemigos fijos en centro y pájaros
-        if(frames===1) spawnCactus();
-        if(frames===1 || frames%300===0){
+        // Solo generar enemigos después de 5 segundos (~300 frames)
+        if(frames===300){
+            spawnCactus();
+            spawnBird("left");
+            spawnBird("right");
+        }
+
+        // Generar pájaros de vez en cuando después del inicio
+        if(frames>300 && frames%300===0){
             spawnBird("left");
             spawnBird("right");
         }
