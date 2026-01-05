@@ -163,35 +163,13 @@ function resetGame(){
   dino.reset();
 }
 
-// ===== MUSICA RETRO =====
-var audioCtx = null;
-var musicInterval = null;
-var musicOn = false;
-
-function startMusic(){
-  if(musicOn) return;
-  musicOn = true;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const notes = [262, 330, 392, 330, 262, 330, 440, 392]; // simple loop
-  let i = 0;
-  musicInterval = setInterval(()=>{
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = "square";
-    osc.frequency.value = notes[i % notes.length];
-    gain.gain.value = 0.05;
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.15);
-    i++;
-  }, 180);
-}
-
-// Arrancar música desde el menú y nunca detener
-document.addEventListener("click",()=>{
-  if(!musicOn) startMusic();
-});
+// ===== INICIAR JUEGO DESDE MENU =====
+canvas.onclick = function(){
+  if(state===MENU){
+    state = GAME;
+    resetGame();
+  }
+};
 
 // ===== LOOP =====
 function loop(){
