@@ -27,7 +27,12 @@ const TOTAL_ASSETS = 4;
 
 function assetLoaded() {
   loaded++;
-  if (loaded === TOTAL_ASSETS) state = MENU;
+  if (loaded === TOTAL_ASSETS) {
+    // 🔹 Forzamos que la pantalla de carga dure 0,5 segundos
+    setTimeout(() => {
+      state = MENU;
+    }, 500);
+  }
 }
 
 [dinoImg, cactusImg, birdImg, bgImg].forEach(img => {
@@ -182,9 +187,12 @@ function loop(time) {
   }
   lastTime = time;
 
-  // ===== CARGA REAL (SIN NEGRO) =====
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // ===== CARGA REAL =====
   if (state === LOADING) {
-    if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#fff";
     ctx.font = "16px monospace";
     ctx.textAlign = "center";
@@ -197,7 +205,8 @@ function loop(time) {
     return;
   }
 
-  ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+  // ===== FONDO =====
+  if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
   // ===== MENU =====
   if (state === MENU) {
