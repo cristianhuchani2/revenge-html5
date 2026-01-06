@@ -174,14 +174,18 @@ function loop(time) {
   }
   lastTime = time;
 
-  // ===== LOADING =====
+  // ===== LOADING (FIX DEFINITIVO) =====
   if (state === LOADING) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     ctx.fillStyle = "#fff";
     ctx.font = "16px monospace";
     ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.fillText("CARGANDO...", canvas.width / 2, canvas.height / 2);
+
     requestAnimationFrame(loop);
     return;
   }
@@ -223,14 +227,14 @@ function loop(time) {
     checkCollisions();
   }
 
-  // ===== PAUSE / OVER =====
+  // ===== PAUSA / GAME OVER =====
   if (state === PAUSE) drawText("PAUSA", 180, 24);
   if (state === OVER) drawText("GAME OVER", 180, 24);
 
   requestAnimationFrame(loop);
 }
 
-// ================== DIBUJAR ==================
+// ================== DIBUJO AUX ==================
 function drawEnemy(e) {
   if (e.type === "cactus") {
     ctx.drawImage(cactusImg, e.x, e.y, e.w, e.h);
@@ -243,11 +247,11 @@ function drawEnemy(e) {
   }
 }
 
-function drawText(txt, y, size = 16) {
+function drawText(text, y, size = 16) {
   ctx.fillStyle = "#fff";
   ctx.font = size + "px monospace";
   ctx.textAlign = "center";
-  ctx.fillText(txt, canvas.width / 2, y);
+  ctx.fillText(text, canvas.width / 2, y);
 }
 
 // ================== INICIO ==================
