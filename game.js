@@ -11,18 +11,24 @@ let lastTime = 0;
 const LOADING = 0, MENU = 1, GAME = 2, PAUSE = 3, OVER = 4;
 let state = LOADING;
 
-// ================== IMAGENES ==================
+// ================== IMÁGENES ==================
 const dinoImg = new Image(); dinoImg.src = "dino.png";
 const cactusImg = new Image(); cactusImg.src = "cactus.png";
 const birdImg = new Image(); birdImg.src = "bird.png";
 const bgImg = new Image(); bgImg.src = "background.png";
 
 let loaded = 0;
+const TOTAL_ASSETS = 4;
+
+function assetLoaded() {
+  loaded++;
+  if (loaded === TOTAL_ASSETS) {
+    state = MENU;
+  }
+}
+
 [dinoImg, cactusImg, birdImg, bgImg].forEach(img => {
-  img.onload = () => {
-    loaded++;
-    if (loaded === 4) state = MENU;
-  };
+  img.onload = assetLoaded;
 });
 
 // ================== CONFIG ==================
@@ -121,7 +127,6 @@ function createBird() {
 
 // ================== BALAS ==================
 let bullets = [];
-
 function shoot() {
   bullets.push({
     x: dino.x + dino.w / 2,
@@ -174,17 +179,22 @@ function loop(time) {
   }
   lastTime = time;
 
-  // ===== LOADING (FIX DEFINITIVO) =====
+  // ===== CARGA REAL (SIN NEGRO) =====
   if (state === LOADING) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (bgImg.complete) {
+      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     ctx.fillStyle = "#fff";
     ctx.font = "16px monospace";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("CARGANDO...", canvas.width / 2, canvas.height / 2);
+    ctx.fillText(
+      "CARGANDO " + Math.floor((loaded / TOTAL_ASSETS) * 100) + "%",
+      canvas.width / 2,
+      canvas.height / 2
+    );
 
     requestAnimationFrame(loop);
     return;
@@ -220,14 +230,12 @@ function loop(time) {
 
     bullets.forEach(b => {
       b.x += b.vx;
-      ctx.fillStyle = "#fff";
       ctx.fillRect(b.x, b.y, b.w, b.h);
     });
 
     checkCollisions();
   }
 
-  // ===== PAUSA / GAME OVER =====
   if (state === PAUSE) drawText("PAUSA", 180, 24);
   if (state === OVER) drawText("GAME OVER", 180, 24);
 
@@ -247,11 +255,11 @@ function drawEnemy(e) {
   }
 }
 
-function drawText(text, y, size = 16) {
+function drawText(txt, y, size = 16) {
   ctx.fillStyle = "#fff";
   ctx.font = size + "px monospace";
   ctx.textAlign = "center";
-  ctx.fillText(text, canvas.width / 2, y);
+  ctx.fillText(txt, canvas.width / 2, y);
 }
 
 // ================== INICIO ==================
