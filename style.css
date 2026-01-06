@@ -1,31 +1,51 @@
-body {
+/* ===== RESET ===== */
+* {
   margin: 0;
-  overflow: hidden;
-  background: #000;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+/* ===== CUERPO ===== */
+body {
+  background: #000;           /* Fondo negro general */
+  overflow: hidden;           /* Evita scroll */
+  font-family: monospace;
+}
+
+/* ===== CANVAS ===== */
 canvas {
   display: block;
   margin: auto;
-  background: #88c0d0;
+  background: #88c0d0;       /* Fondo de prueba mientras carga bgImg */
 }
 
+/* ===== BOTONES ===== */
 #controls {
   position: absolute;
-  bottom: 10px;
+  bottom: 10px;              /* A 10px del borde inferior */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 10px;                 /* Espacio entre botones */
+  z-index: 10;
 }
 
 #controls button {
-  width: 50px;
-  height: 50px;
-  font-size: 24px;
+  width: 60px;               /* Botones más grandes */
+  height: 60px;
+  font-size: 28px;
   font-weight: bold;
+  color: #000;
   background: #fff;
   border: 2px solid #000;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s;
+}
+
+/* ===== EFECTO CLICK ===== */
+#controls button:active {
+  transform: scale(0.95);
+  background: #ccc;
 }
