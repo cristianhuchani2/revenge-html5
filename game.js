@@ -3,7 +3,7 @@ var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
 
 // ================== FORZAR FONDO INICIAL ==================
-canvas.style.background = "#222"; // fondo gris oscuro
+canvas.style.background = "#222"; 
 ctx.fillStyle = "#222";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -28,10 +28,7 @@ const TOTAL_ASSETS = 4;
 function assetLoaded() {
   loaded++;
   if (loaded === TOTAL_ASSETS) {
-    // 🔹 Forzamos que la pantalla de carga dure 0,5 segundos
-    setTimeout(() => {
-      state = MENU;
-    }, 500);
+    state = MENU; // PASA AL MENÚ INMEDIATAMENTE
   }
 }
 
