@@ -2,39 +2,20 @@
 var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
 
-// ================== FORZAR FONDO INICIAL ==================
-canvas.style.background = "#222"; 
-ctx.fillStyle = "#222";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-
 // ================== FPS ==================
 const FPS = 30;
 const fpsInterval = 1000 / FPS;
 let lastTime = 0;
 
 // ================== ESTADOS ==================
-const LOADING = 0, MENU = 1, GAME = 2, PAUSE = 3, OVER = 4;
-let state = LOADING;
+const MENU = 0, GAME = 1, PAUSE = 2, OVER = 3;
+let state = MENU;
 
 // ================== IMÁGENES ==================
 const dinoImg = new Image(); dinoImg.src = "dino.png";
 const cactusImg = new Image(); cactusImg.src = "cactus.png";
 const birdImg = new Image(); birdImg.src = "bird.png";
 const bgImg = new Image(); bgImg.src = "background.png";
-
-let loaded = 0;
-const TOTAL_ASSETS = 4;
-
-function assetLoaded() {
-  loaded++;
-  if (loaded === TOTAL_ASSETS) {
-    state = MENU; // PASA AL MENÚ INMEDIATAMENTE
-  }
-}
-
-[dinoImg, cactusImg, birdImg, bgImg].forEach(img => {
-  img.onload = assetLoaded;
-});
 
 // ================== CONFIG ==================
 const groundY = 236;
@@ -185,22 +166,6 @@ function loop(time) {
   lastTime = time;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // ===== CARGA REAL =====
-  if (state === LOADING) {
-    ctx.fillStyle = "#222";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#fff";
-    ctx.font = "16px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(
-      "CARGANDO " + Math.floor((loaded / TOTAL_ASSETS) * 100) + "%",
-      canvas.width / 2,
-      canvas.height / 2
-    );
-    requestAnimationFrame(loop);
-    return;
-  }
 
   // ===== FONDO =====
   if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
