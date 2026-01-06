@@ -1,9 +1,10 @@
 var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
 
-var raf = window.requestAnimationFrame ||
-          window.webkitRequestAnimationFrame ||
-          function(fn){ setTimeout(fn,1000/30); };
+// ===== FPS LIMIT =====
+var FPS = 30;
+var fpsInterval = 1000 / FPS;
+var lastTime = 0;
 
 // ===== IMÁGENES =====
 var dinoImg = new Image(); dinoImg.src = "dino.png";
@@ -41,8 +42,11 @@ var dino = {
   jump:-12,
   grounded:true,
   dir:1,
+  alive:true,
 
   update(){
+    if(!this.alive) return;
+
     this.vy += this.g;
     this.y += this.vy;
     this.x += this.vx;
@@ -79,19 +83,21 @@ var dino = {
     this.vx = this.vy = 0;
     this.grounded = true;
     this.dir = 1;
+    this.alive = true;
   }
 };
 
 // ===== ENEMIGOS =====
 var enemies = [];
 var spawnTimer = 0;
+var birdUnlockTime = 10*FPS; // pájaros después de 10 segundos
 
 function createCactus(){
   var left = Math.random()<0.5;
   return {
     type:"cactus",
     x: left ? -60 : canvas.width,
-    y: dinoGroundY + 10,
+    y: dinoGroundY,
     w:52, h:100,
     vx: left ? 2 : -2
   };
@@ -129,13 +135,24 @@ left.onmouseup   = left.ontouchend   = ()=> moveLeft=false;
 right.onmousedown = right.ontouchstart = ()=>{ moveRight=true; dino.dir=1; };
 right.onmouseup   = right.ontouchend   = ()=> moveRight=false;
 
-jump.onclick = jump.ontouchstart = ()=>{ if(state===GAME) dino.jumpUp(); };
-shoot.onclick = shoot.ontouchstart = ()=>{ if(state===GAME) shoot(); };
+jump.onclick = jump.ontouchstart = e=>{
+  e.stopPropagation();
+  if(state===GAME) dino.jumpUp();
+};
+shoot.onclick = shoot.ontouchstart = e=>{
+  e.stopPropagation();
+  if(state===GAME) shoot();
+};
 
 // ===== PAUSA =====
+var pausePressed = false;
 pause.onclick = pause.ontouchstart = ()=>{
-  if(state===GAME) state=PAUSE;
-  else if(state===PAUSE) state=GAME;
+  if(!pausePressed){
+    pausePressed = true;
+    if(state===GAME) state=PAUSE;
+    else if(state===PAUSE) state=GAME;
+    setTimeout(()=>{pausePressed=false;},200);
+  }
 };
 
 // ===== TECLADO =====
@@ -163,7 +180,7 @@ function resetGame(){
   dino.reset();
 }
 
-// ===== INICIAR JUEGO DESDE MENU =====
+// ===== INICIO DESDE MENU =====
 canvas.onclick = function(){
   if(state===MENU){
     state = GAME;
@@ -171,8 +188,29 @@ canvas.onclick = function(){
   }
 };
 
-// ===== LOOP =====
-function loop(){
+// ===== COLLISIONES =====
+function checkCollisions(){
+  enemies.forEach(e=>{
+    if(dino.alive &&
+      dino.x < e.x+e.w &&
+      dino.x+dino.w > e.x &&
+      dino.y < e.y+e.h &&
+      dino.y+dino.h > e.y
+    ){
+      dino.alive = false;
+      state = OVER;
+    }
+  });
+}
+
+// ===== LOOP 30FPS =====
+function loop(timestamp){
+  if(timestamp - lastTime < fpsInterval){
+    requestAnimationFrame(loop);
+    return;
+  }
+  lastTime = timestamp;
+
   if(bgImg.complete)
     ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
   else{
@@ -193,7 +231,8 @@ function loop(){
     dino.draw();
     enemies.forEach(e=>drawEnemy(e));
     text("PAUSA",180,24);
-    raf(loop); return;
+    requestAnimationFrame(loop);
+    return;
   }
 
   if(state===GAME){
@@ -204,11 +243,18 @@ function loop(){
     dino.update();
     dino.draw();
 
+    // SPAWN DE ENEMIGOS PROGRESIVO
     spawnTimer++;
-    if(spawnTimer>120){
+    if(spawnTimer>90){ // cada 3 segundos aprox
       spawnTimer=0;
-      enemies.push(Math.random()<0.5?createCactus():createBird());
+      if(spawnTimer < birdUnlockTime){
+        enemies.push(createCactus());
+      } else {
+        enemies.push(Math.random()<0.5?createCactus():createBird());
+      }
     }
+
+    enemies = enemies.filter(e=> e.x+e.w>0 && e.x<canvas.width ); // optimización fuera de pantalla
 
     enemies.forEach(e=>{
       e.x += e.vx;
@@ -220,9 +266,11 @@ function loop(){
       ctx.fillStyle="#fff";
       ctx.fillRect(b.x,b.y,b.w,b.h);
     });
+
+    checkCollisions();
   }
 
-  raf(loop);
+  requestAnimationFrame(loop);
 }
 
 function drawEnemy(e){
@@ -244,4 +292,5 @@ function text(t,y,s){
   ctx.fillText(t,canvas.width/2,y);
 }
 
-loop();
+// ===== INICIO =====
+requestAnimationFrame(loop);
