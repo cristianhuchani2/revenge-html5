@@ -8,7 +8,7 @@ const fpsInterval = 1000 / FPS;
 let lastTime = 0;
 
 // ================== ESTADOS ==================
-const MENU = 0, GAME = 1, PAUSE = 2, OVER = 3;
+const MENU = 0, GAME = 1, OVER = 2;
 let state = MENU;
 
 // ================== IMÁGENES ==================
@@ -23,7 +23,7 @@ const groundY = 236;
 // ================== DINO ==================
 const dino = {
   x: canvas.width / 2 - 37,
-  y: groundY,
+  y: groundY + 10, // Bajado 10 px
   w: 74,
   h: 72,
   vx: 0,
@@ -39,8 +39,8 @@ const dino = {
     this.y += this.vy;
     this.x += this.vx;
 
-    if (this.y >= groundY) {
-      this.y = groundY;
+    if (this.y >= groundY + 10) {
+      this.y = groundY + 10;
       this.vy = 0;
       this.grounded = true;
     }
@@ -65,7 +65,7 @@ const dino = {
 
   reset() {
     this.x = canvas.width / 2 - this.w / 2;
-    this.y = groundY;
+    this.y = groundY + 10;
     this.vx = 0;
     this.vy = 0;
     this.grounded = true;
@@ -103,9 +103,9 @@ function createBird() {
   return {
     type: "bird",
     x: left ? -60 : canvas.width,
-    y: groundY - 60,
-    w: 52,
-    h: 52,
+    y: groundY - 40, // Bajado para coordinar con dino
+    w: 52 * 0.7,
+    h: 52 * 0.7,
     vx: left ? 2 : -2,
     dir: left ? 1 : -1
   };
@@ -136,12 +136,6 @@ document.addEventListener("mouseup", () => {
   leftHeld = false;
   rightHeld = false;
 });
-
-// ================== PAUSA ==================
-pause.onclick = () => {
-  if (state === GAME) state = PAUSE;
-  else if (state === PAUSE) state = GAME;
-};
 
 // ================== COLISION ==================
 function checkCollisions() {
@@ -204,7 +198,6 @@ function loop(time) {
     checkCollisions();
   }
 
-  if (state === PAUSE) drawText("PAUSA", 180, 24);
   if (state === OVER) drawText("GAME OVER", 180, 24);
 
   requestAnimationFrame(loop);
