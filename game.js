@@ -2,6 +2,11 @@
 var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
 
+// ================== FORZAR FONDO INICIAL ==================
+canvas.style.background = "#222"; // fondo gris oscuro
+ctx.fillStyle = "#222";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
 // ================== FPS ==================
 const FPS = 30;
 const fpsInterval = 1000 / FPS;
@@ -22,9 +27,7 @@ const TOTAL_ASSETS = 4;
 
 function assetLoaded() {
   loaded++;
-  if (loaded === TOTAL_ASSETS) {
-    state = MENU;
-  }
+  if (loaded === TOTAL_ASSETS) state = MENU;
 }
 
 [dinoImg, cactusImg, birdImg, bgImg].forEach(img => {
@@ -181,12 +184,7 @@ function loop(time) {
 
   // ===== CARGA REAL (SIN NEGRO) =====
   if (state === LOADING) {
-    if (bgImg.complete) {
-      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
+    if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#fff";
     ctx.font = "16px monospace";
     ctx.textAlign = "center";
@@ -195,7 +193,6 @@ function loop(time) {
       canvas.width / 2,
       canvas.height / 2
     );
-
     requestAnimationFrame(loop);
     return;
   }
