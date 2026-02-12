@@ -1,237 +1,238 @@
-// ================== CANVAS ==================
 var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
 
-// ================== FPS ==================
-const FPS = 30;
-const fpsInterval = 1000 / FPS;
-let lastTime = 0;
+var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function(fn){ setTimeout(fn,1000/30); };
 
-// ================== ESTADOS ==================
-const MENU = 0, GAME = 1, OVER = 2;
-let state = MENU;
+// ===== Sprites =====
+var dinoImg = new Image(); dinoImg.src = "dino.png";
+var birdImg = new Image(); birdImg.src = "bird.png";
+var cactusImg = new Image(); cactusImg.src = "cactus.png";
+var bgImg = new Image(); bgImg.src = "background.png";
 
-// ================== IMÁGENES ==================
-const dinoImg = new Image(); dinoImg.src = "dino.png";
-const cactusImg = new Image(); cactusImg.src = "cactus.png";
-const birdImg = new Image(); birdImg.src = "bird.png";
-const bgImg = new Image(); bgImg.src = "background.png";
+// ===== Estado =====
+var LOADING=0, MENU=1, GAME=2, OVER=3;
+var state = LOADING;
 
-// ================== CONFIG ==================
-const groundY = 236;
+var frames = 0;
+var score = 0;
+var difficulty = 1;
 
-// ================== DINO ==================
-const dino = {
-  x: canvas.width / 2 - 37,
-  y: groundY + 10, // Bajado 10 px
-  w: 74,
-  h: 72,
-  vx: 0,
-  vy: 0,
-  speed: 4,
-  gravity: 0.7,
-  jumpForce: -12,
-  grounded: true,
-  dir: 1,
+var imagesLoaded = 0;
+var totalImages = 4;
 
-  update() {
-    this.vy += this.gravity;
-    this.y += this.vy;
-    this.x += this.vx;
+dinoImg.onload = checkLoad;
+birdImg.onload = checkLoad;
+cactusImg.onload = checkLoad;
+bgImg.onload = checkLoad;
 
-    if (this.y >= groundY + 10) {
-      this.y = groundY + 10;
-      this.vy = 0;
-      this.grounded = true;
+function checkLoad(){
+    imagesLoaded++;
+    if(imagesLoaded>=totalImages){
+        state = MENU;
+        resetGame();
     }
+}
 
-    this.x = Math.max(0, Math.min(canvas.width - this.w, this.x));
-  },
+// ===== Dino =====
+var dinoGroundY = 216; // 288 del suelo - 72 altura dino
 
-  draw() {
-    ctx.save();
-    ctx.translate(this.x + this.w / 2, this.y + this.h / 2);
-    ctx.scale(this.dir === 1 ? -1 : 1, 1);
-    ctx.drawImage(dinoImg, -this.w / 2, -this.h / 2, this.w, this.h);
-    ctx.restore();
-  },
+var dino = {
+    w: 74, h:72,
+    x: canvas.width/2 - 37,
+    y: dinoGroundY,
+    vx:0, vy:0,
+    speed:4,
+    g:0.7,
+    jump:-12,
+    grounded:true,
+    dir:1,
 
-  jump() {
-    if (this.grounded) {
-      this.vy = this.jumpForce;
-      this.grounded = false;
+    draw:function(){
+        ctx.save();
+        ctx.translate(this.x+this.w/2, this.y+this.h/2);
+        ctx.scale(this.dir===1?-1:1,1);
+        if(dinoImg.complete) ctx.drawImage(dinoImg,-this.w/2,-this.h/2,this.w,this.h);
+        else {ctx.fillStyle="#fff"; ctx.fillRect(-this.w/2,-this.h/2,this.w,this.h);}
+        ctx.restore();
+    },
+
+    update:function(){
+        this.vy += this.g;
+        this.y += this.vy;
+        this.x += this.vx;
+
+        if(this.y >= dinoGroundY){ 
+            this.y = dinoGroundY; 
+            this.vy = 0; 
+            this.grounded = true; 
+        }
+
+        if(this.x<0) this.x=0;
+        if(this.x+this.w>canvas.width) this.x=canvas.width-this.w;
+    },
+
+    jumpUp:function(){
+        if(this.grounded){ this.vy=this.jump; this.grounded=false; }
+    },
+
+    reset:function(){
+        this.x = canvas.width/2 - this.w/2;
+        this.y = dinoGroundY;
+        this.vx=0; this.vy=0; this.grounded=true;
+        this.dir = 1;
     }
-  },
-
-  reset() {
-    this.x = canvas.width / 2 - this.w / 2;
-    this.y = groundY + 10;
-    this.vx = 0;
-    this.vy = 0;
-    this.grounded = true;
-    this.dir = 1;
-  }
 };
 
-// ================== ENEMIGOS ==================
-let enemies = [];
-let gameTime = 0;
-const spawnDelay = FPS * 3;
-
-function spawnEnemy() {
-  if (gameTime < FPS * 6) {
-    enemies.push(createCactus());
-  } else {
-    enemies.push(Math.random() < 0.5 ? createCactus() : createBird());
-  }
+// ===== Crear enemigos =====
+function createCactus(){
+    var side = Math.random()<0.5 ? "left" : "right";
+    return {
+        type:"cactus",
+        x: side==="left" ? -52 : canvas.width,
+        y: canvas.height/2 + 20, // altura original
+        w:52, h:100,
+        vx: side==="left" ? 2 + difficulty*0.5 : -2 - difficulty*0.5,
+        dir: side==="left" ? 1 : -1
+    };
 }
 
-function createCactus() {
-  const left = Math.random() < 0.5;
-  return {
-    type: "cactus",
-    x: left ? -60 : canvas.width,
-    y: groundY,
-    w: 52,
-    h: 100,
-    vx: left ? 2 : -2
-  };
+function createBird(side){
+    var scale = 0.7;
+    return {
+        type:"bird",
+        x: side==="left"?0:canvas.width-75*scale,
+        y: dinoGroundY - 30, // 30px por encima del dino
+        w:75*scale, h:75*scale,
+        vx: side==="left"?2 + difficulty*0.5 : -2 - difficulty*0.5,
+        dir: side==="left"?1:-1
+    };
 }
 
-function createBird() {
-  const left = Math.random() < 0.5;
-  return {
-    type: "bird",
-    x: left ? -60 : canvas.width,
-    y: groundY - 40, // Bajado para coordinar con dino
-    w: 52 * 0.7,
-    h: 52 * 0.7,
-    vx: left ? 2 : -2,
-    dir: left ? 1 : -1
-  };
+// ===== Balas =====
+var bullets = [];
+function shoot(){
+    bullets.push({x:dino.x+dino.w/2-3, y:dino.y+dino.h/2-2, w:6,h:3,vx:6*dino.dir});
 }
 
-// ================== BALAS ==================
-let bullets = [];
-function shoot() {
-  bullets.push({
-    x: dino.x + dino.w / 2,
-    y: dino.y + dino.h / 2,
-    w: 6,
-    h: 3,
-    vx: 6 * dino.dir
-  });
-}
+// ===== Enemigos =====
+var enemies=[];
+var spawnTimer=0, spawnInterval=120, spawnCounter=0;
 
-// ================== CONTROLES ==================
-let leftHeld = false;
-let rightHeld = false;
+// ===== Controles =====
+var moveLeft=false, moveRight=false;
+var leftBtn = document.getElementById("left");
+var rightBtn = document.getElementById("right");
+var jumpBtn = document.getElementById("jump");
+var shootBtn = document.getElementById("shoot");
 
-left.onclick = () => { leftHeld = true; dino.dir = -1; };
-right.onclick = () => { rightHeld = true; dino.dir = 1; };
-jump.onclick = () => dino.jump();
-shootBtn.onclick = () => shoot();
+leftBtn.onmousedown=leftBtn.ontouchstart=function(){moveLeft=true; dino.dir=-1;};
+leftBtn.onmouseup=leftBtn.ontouchend=function(){moveLeft=false;};
+rightBtn.onmousedown=rightBtn.ontouchstart=function(){moveRight=true; dino.dir=1;};
+rightBtn.onmouseup=rightBtn.ontouchend=function(){moveRight=false;};
+jumpBtn.onclick=jumpBtn.ontouchstart=function(){if(state===GAME)dino.jumpUp();};
+shootBtn.onclick=shootBtn.ontouchstart=function(){if(state===GAME)shoot();};
 
-document.addEventListener("mouseup", () => {
-  leftHeld = false;
-  rightHeld = false;
-});
+canvas.onclick=function(){
+    if(state===MENU) state=GAME;
+    else if(state===OVER) resetGame();
+};
 
-// ================== COLISION ==================
-function checkCollisions() {
-  enemies.forEach(e => {
-    if (
-      dino.x < e.x + e.w &&
-      dino.x + dino.w > e.x &&
-      dino.y < e.y + e.h &&
-      dino.y + dino.h > e.y
-    ) {
-      state = OVER;
-    }
-  });
-}
-
-// ================== LOOP ==================
-function loop(time) {
-  if (time - lastTime < fpsInterval) {
-    requestAnimationFrame(loop);
-    return;
-  }
-  lastTime = time;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // ===== FONDO =====
-  if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-
-  // ===== MENU =====
-  if (state === MENU) {
-    dino.draw();
-    drawText("CLICK PARA JUGAR", canvas.height / 2);
-  }
-
-  // ===== GAME =====
-  if (state === GAME) {
-    gameTime++;
-
-    dino.vx = 0;
-    if (leftHeld) dino.vx = -dino.speed;
-    if (rightHeld) dino.vx = dino.speed;
-
-    dino.update();
-    dino.draw();
-
-    if (gameTime % spawnDelay === 0) spawnEnemy();
-
-    enemies.forEach(e => {
-      e.x += e.vx;
-      drawEnemy(e);
-    });
-
-    enemies = enemies.filter(e => e.x > -100 && e.x < canvas.width + 100);
-
-    bullets.forEach(b => {
-      b.x += b.vx;
-      ctx.fillRect(b.x, b.y, b.w, b.h);
-    });
-
-    checkCollisions();
-  }
-
-  if (state === OVER) drawText("GAME OVER", 180, 24);
-
-  requestAnimationFrame(loop);
-}
-
-// ================== DIBUJO AUX ==================
-function drawEnemy(e) {
-  if (e.type === "cactus") {
-    ctx.drawImage(cactusImg, e.x, e.y, e.w, e.h);
-  } else {
-    ctx.save();
-    ctx.translate(e.x + e.w / 2, e.y + e.h / 2);
-    ctx.scale(e.dir === 1 ? -1 : 1, 1);
-    ctx.drawImage(birdImg, -e.w / 2, -e.h / 2, e.w, e.h);
-    ctx.restore();
-  }
-}
-
-function drawText(txt, y, size = 16) {
-  ctx.fillStyle = "#fff";
-  ctx.font = size + "px monospace";
-  ctx.textAlign = "center";
-  ctx.fillText(txt, canvas.width / 2, y);
-}
-
-// ================== INICIO ==================
-canvas.onclick = () => {
-  if (state === MENU) {
-    enemies = [];
-    bullets = [];
-    gameTime = 0;
+// ===== Reset =====
+function resetGame(){
+    enemies=[]; bullets=[]; score=0; difficulty=1; frames=0;
+    spawnTimer=0; spawnCounter=0;
     dino.reset();
-    state = GAME;
-  }
-};
+}
 
-requestAnimationFrame(loop);
+// ===== Colisiones =====
+function rectHit(a,b){ return (a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y); }
+
+// ===== Loop =====
+function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Fondo
+    if(bgImg.complete) ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
+
+    if(state===LOADING){ drawText("Cargando sprites...",180,24); }
+
+    if(state===MENU){
+        dino.draw();
+        drawText("DINO PIXEL REVENGE H",150,24);
+        drawText("CLICK PARA JUGAR",200,14);
+    }
+
+    if(state===GAME){
+        frames++;
+
+        // Movimiento solo mientras se presiona
+        dino.vx = 0;
+        if(moveLeft){ dino.vx = -dino.speed; dino.dir=-1; }
+        if(moveRight){ dino.vx = dino.speed; dino.dir=1; }
+        dino.update();
+        dino.draw();
+
+        // Aparición progresiva de enemigos
+        spawnTimer++;
+        if(spawnTimer>=spawnInterval){
+            spawnTimer=0;
+            spawnCounter++;
+            if(spawnCounter<=3){
+                enemies.push(createCactus());
+            } else {
+                if(Math.random()<0.5){
+                    enemies.push(createCactus());
+                } else {
+                    enemies.push(createBird(Math.random()<0.5?"left":"right"));
+                }
+            }
+            if(spawnInterval>30 && frames%300===0) spawnInterval-=5;
+        }
+
+        // Dibujar enemigos
+        for(var i=0;i<enemies.length;i++){
+            var e=enemies[i];
+            if(e.type==="bird"){
+                ctx.save();
+                ctx.translate(e.x+e.w/2,e.y+e.h/2);
+                ctx.scale(e.dir===1?-1:1,1);
+                if(birdImg.complete) ctx.drawImage(birdImg,-e.w/2,-e.h/2,e.w,e.h);
+                ctx.restore();
+                e.x += e.vx;
+            } else if(e.type==="cactus"){
+                if(cactusImg.complete) ctx.drawImage(cactusImg,e.x,e.y,e.w,e.h);
+                e.x += e.vx; // mover cactus
+            }
+        }
+
+        // Balas
+        for(var i=0;i<bullets.length;i++){
+            bullets[i].x += bullets[i].vx;
+            ctx.fillStyle="#ffff00";
+            ctx.fillRect(bullets[i].x,bullets[i].y,bullets[i].w,bullets[i].h);
+        }
+
+        // Colisiones
+        for(var i=enemies.length-1;i>=0;i--){
+            var e=enemies[i];
+            if(rectHit(dino,e)) state=OVER;
+            for(var j=bullets.length-1;j>=0;j--){
+                if(rectHit(bullets[j],e)){ bullets.splice(j,1); enemies.splice(i,1); score++; break; }
+            }
+        }
+
+        drawText("Score: "+score,50,14);
+    }
+
+    if(state===OVER){
+        drawText("GAME OVER",180,26);
+        drawText("Score: "+score,220,16);
+        drawText("CLICK PARA REINICIAR",250,14);
+    }
+
+    raf(loop);
+}
+
+function drawText(t,y,s){ ctx.fillStyle="#fff"; ctx.font=s+"px monospace"; ctx.textAlign="center"; ctx.fillText(t,canvas.width/2,y); }
+
+loop();
