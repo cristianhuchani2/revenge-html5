@@ -1,51 +1,32 @@
-/* ===== RESET ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* ===== CUERPO ===== */
 body {
-  background: #000;           /* Fondo negro general */
-  overflow: hidden;           /* Evita scroll */
-  font-family: monospace;
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: monospace;
 }
 
-/* ===== CANVAS ===== */
 canvas {
-  display: block;
-  margin: auto;
-  background: #88c0d0;       /* Fondo de prueba mientras carga bgImg */
+    display: block;
+    margin: 0 auto;
+    background: #000;
+    position: relative;
 }
 
-/* ===== BOTONES ===== */
-#controls {
-  position: absolute;
-  bottom: 10px;              /* A 10px del borde inferior */
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;                 /* Espacio entre botones */
-  z-index: 10;
+/* Botones flotantes */
+#left, #right, #jump, #shoot {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #444;
+    color: #fff;
+    text-align: center;
+    line-height: 50px;
+    font-weight: bold;
+    border-radius: 4px;
+    user-select: none;
 }
 
-#controls button {
-  width: 60px;               /* Botones más grandes */
-  height: 60px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #000;
-  background: #fff;
-  border: 2px solid #000;
-  border-radius: 6px;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.1s;
-}
-
-/* ===== EFECTO CLICK ===== */
-#controls button:active {
-  transform: scale(0.95);
-  background: #ccc;
-}
+#left { left: 20px; bottom: 20px; }
+#right { left: 80px; bottom: 20px; }
+#jump { right: 80px; bottom: 20px; }
+#shoot { right: 20px; bottom: 20px; }
